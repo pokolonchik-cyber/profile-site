@@ -52,7 +52,6 @@ textarea{min-height:80px;resize:vertical;font-family:inherit}
     <% (visitors || []).slice(0,10).forEach(function(v){ %>
       <div class="vw-item">
         <span class="vw-ip"><%= v.ip %></span>
-        <span style="color:#666;font-size:10px"><%= v.parsed.browser %> / <%= v.parsed.os %> / <%= v.parsed.device %></span>
         <span class="vw-time"><%= new Date(v.time).toLocaleTimeString() %></span>
       </div>
     <% }) %>
