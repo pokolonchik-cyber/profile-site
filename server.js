@@ -217,6 +217,24 @@ app.post('/admin/music', requireAuth, upload.single('music'), (req, res) => {
   res.redirect('/admin?msg=Music updated');
 });
 
+app.post('/admin/bg-image', requireAuth, upload.single('bgImage'), (req, res) => {
+  if (!req.file) return res.redirect('/admin?msg=No file');
+  const settings = readJSON(SETTINGS_FILE);
+  settings.bgType = 'image';
+  settings.bgValue = '/uploads/' + req.file.filename;
+  writeJSON(SETTINGS_FILE, settings);
+  res.redirect('/admin?msg=Background image uploaded');
+});
+
+app.post('/admin/bg-video', requireAuth, upload.single('bgVideo'), (req, res) => {
+  if (!req.file) return res.redirect('/admin?msg=No file');
+  const settings = readJSON(SETTINGS_FILE);
+  settings.bgType = 'video';
+  settings.bgValue = '/uploads/' + req.file.filename;
+  writeJSON(SETTINGS_FILE, settings);
+  res.redirect('/admin?msg=Background video uploaded');
+});
+
 app.post('/admin/ngrok', requireAuth, (req, res) => {
   const config = readJSON(CONFIG_FILE);
   config.ngrokToken = req.body.ngrokToken || '';

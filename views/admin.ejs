@@ -149,6 +149,18 @@ textarea{min-height:80px;resize:vertical;font-family:inherit}
       <div id="bgVideoField" style="display:none"><label>Video URL / YouTube embed</label><input name="bgValue" placeholder="https://..." value="<%= settings.bgType==='video'?settings.bgValue:'' %>"></div>
       <button class="btn" type="submit">Save</button>
     </form>
+    <form action="/admin/bg-image" method="post" enctype="multipart/form-data" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+      <label>Upload Background Image</label>
+      <input type="file" name="bgImage" accept="image/*">
+      <% if (settings.bgType==='image' && settings.bgValue && !settings.bgValue.startsWith('http')) { %><p style="color:#666;font-size:12px;margin-top:4px">File: <%= settings.bgValue %></p><% } %>
+      <button class="btn btn-sm" type="submit">Upload Image</button>
+    </form>
+    <form action="/admin/bg-video" method="post" enctype="multipart/form-data" style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+      <label>Upload Background Video</label>
+      <input type="file" name="bgVideo" accept="video/*">
+      <% if (settings.bgType==='video' && settings.bgValue && !settings.bgValue.startsWith('http')) { %><p style="color:#666;font-size:12px;margin-top:4px">File: <%= settings.bgValue %></p><% } %>
+      <button class="btn btn-sm" type="submit">Upload Video</button>
+    </form>
   </div>
 
   <!-- Music -->
