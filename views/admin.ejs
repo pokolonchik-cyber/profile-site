@@ -20,7 +20,7 @@ textarea{min-height:80px;resize:vertical;font-family:inherit}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .file-input{position:relative}
 .file-input input[type=file]{padding:8px;font-size:12px;color:#aaa}
-.visitor-widget{position:fixed;top:12px;right:12px;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;min-width:180px;max-height:300px;overflow-y:auto;font-size:11px}
+.visitor-widget{position:fixed;top:12px;left:12px;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;min-width:180px;max-height:300px;overflow-y:auto;font-size:11px}
 .visitor-widget .vw-title{color:#666;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .visitor-widget .vw-item{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .visitor-widget .vw-item:last-child{border-bottom:none}
@@ -52,6 +52,7 @@ textarea{min-height:80px;resize:vertical;font-family:inherit}
     <% (visitors || []).slice(0,10).forEach(function(v){ %>
       <div class="vw-item">
         <span class="vw-ip"><%= v.ip %></span>
+        <span style="color:#666;font-size:10px"><%= v.parsed.browser %> / <%= v.parsed.os %> / <%= v.parsed.device %></span>
         <span class="vw-time"><%= new Date(v.time).toLocaleTimeString() %></span>
       </div>
     <% }) %>

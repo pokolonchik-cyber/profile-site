@@ -58,6 +58,28 @@ initConfig();
 function readJSON(file) { return JSON.parse(fs.readFileSync(file, 'utf-8')); }
 function writeJSON(file, data) { fs.writeFileSync(file, JSON.stringify(data, null, 2)); }
 
+function parseUA(ua) {
+  let browser = 'Unknown', os = 'Unknown', device = 'Desktop';
+  if (!ua) return { browser, os, device };
+  const b = ua.toLowerCase();
+  if (b.includes('edg')) browser = 'Edge';
+  else if (b.includes('vivaldi')) browser = 'Vivaldi';
+  else if (b.includes('opr') || b.includes('opera')) browser = 'Opera';
+  else if (b.includes('chrome')) browser = 'Chrome';
+  else if (b.includes('firefox')) browser = 'Firefox';
+  else if (b.includes('safari') && !b.includes('chrome')) browser = 'Safari';
+  if (b.includes('iphone') || b.includes('ipad')) device = 'Mobile';
+  else if (b.includes('android')) device = 'Mobile';
+  else if (b.includes('mobile')) device = 'Mobile';
+  else if (b.includes('tablet')) device = 'Tablet';
+  if (b.includes('windows')) os = 'Windows';
+  else if (b.includes('mac os') || b.includes('macintosh')) os = 'macOS';
+  else if (b.includes('linux') && !b.includes('android')) os = 'Linux';
+  else if (b.includes('android')) os = 'Android';
+  else if (b.includes('iphone') || b.includes('ipad') || b.includes('like mac os')) os = 'iOS';
+  return { browser, os, device };
+}
+
 // Multer config
 const upload = multer({
   storage: multer.diskStorage({
@@ -149,7 +171,7 @@ app.post('/login', (req, res) => {
 app.get('/admin', requireAuth, (req, res) => {
   const config = readJSON(CONFIG_FILE);
   const settings = readJSON(SETTINGS_FILE);
-  const visitors = readJSON(VISITORS_FILE).reverse();
+  const visitors = readJSON(VISITORS_FILE).reverse().map(v => ({ ...v, parsed: parseUA(v.ua) }));
   res.render('admin', { settings, config, visitors, msg: req.query.msg || '' });
 });
 
