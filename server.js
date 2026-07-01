@@ -107,10 +107,8 @@ app.use((req, res, next) => {
 
 // Routes
 app.get('/', (req, res) => {
-  const config = readJSON(CONFIG_FILE);
-  if (!config.setupDone) return res.redirect('/setup');
   const settings = readJSON(SETTINGS_FILE);
-  res.render('index', { settings, config });
+  res.render('index', { settings });
 });
 
 app.get('/setup', (req, res) => {
