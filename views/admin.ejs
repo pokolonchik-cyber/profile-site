@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#fff;padding:20px;min-height:100vh}
+.container{max-width:800px;margin:0 auto}
+h1{font-size:28px;margin-bottom:8px;background:linear-gradient(135deg,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:#666;font-size:14px;margin-bottom:30px}
+.card{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px;margin-bottom:20px}
+.card h2{font-size:16px;margin-bottom:16px;color:#ccc}
+label{display:block;font-size:12px;color:#888;margin-bottom:4px;margin-top:12px}
+input,select,textarea{width:100%;padding:10px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:13px;outline:none;transition:border .2s}
+input:focus,textarea:focus{border-color:#8b5cf6}
+textarea{min-height:80px;resize:vertical;font-family:inherit}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.file-input{position:relative}
+.file-input input[type=file]{padding:8px;font-size:12px;color:#aaa}
+.visitor-widget{position:fixed;top:12px;right:12px;z-index:100;background:rgba(10,10,15,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;min-width:180px;max-height:300px;overflow-y:auto;font-size:11px}
+.visitor-widget .vw-title{color:#666;font-size:10px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.visitor-widget .vw-item{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.visitor-widget .vw-item:last-child{border-bottom:none}
+.visitor-widget .vw-ip{color:#8b5cf6}
+.visitor-widget .vw-time{color:#444;font-size:10px}
+.btn{display:inline-block;padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:transform .2s,opacity .2s;margin-top:12px;text-decoration:none}
+.btn:hover{transform:translateY(-2px);opacity:.9}
+.btn-sm{padding:6px 14px;font-size:12px}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626)}
+.btn-outline{background:transparent;border:1px solid rgba(255,255,255,.15)}
+.msg{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:10px 14px;font-size:13px;color:#22c55e;margin-bottom:16px}
+.checkbox-row{display:flex;gap:20px;flex-wrap:wrap;margin-top:8px}
+.checkbox-row label{display:flex;align-items:center;gap:8px;color:#aaa;font-size:13px;cursor:pointer;margin:0}
+.checkbox-row input[type=checkbox]{width:auto;accent-color:#8b5cf6}
+.links-list{margin-top:8px}
+.link-item{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.link-item input{flex:1}
+.link-item button{padding:8px 12px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.3);border-radius:8px;color:#ef4444;cursor:pointer;font-size:12px}
+.add-link{background:rgba(139,92,246,.15);border:1px dashed rgba(139,92,246,.3);border-radius:10px;padding:8px;text-align:center;cursor:pointer;color:#8b5cf6;font-size:13px;margin-top:8px;transition:background .2s}
+.add-link:hover{background:rgba(139,92,246,.25)}
+@media(max-width:600px){.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- Floating visitor widget -->
+  <div class="visitor-widget">
+    <div class="vw-title">Visitors</div>
+    <% (visitors || []).slice(0,10).forEach(function(v){ %>
+      <div class="vw-item">
+        <span class="vw-ip"><%= v.ip %></span>
+        <span class="vw-time"><%= new Date(v.time).toLocaleTimeString() %></span>
+      </div>
+    <% }) %>
+    <% if (!visitors || !visitors.length) { %><div style="color:#444">No visitors yet</div><% } %>
+  </div>
+
+  <h1>Admin Panel</h1>
+  <p class="sub">Manage your profile settings</p>
+
+  <% if (msg) { %><div class="msg"><%= msg %></div><% } %>
+
+  <!-- Profile -->
+  <div class="card">
+    <h2>Profile</h2>
+    <form action="/admin/settings" method="post">
+      <label>Nickname</label>
+      <input name="nickname" value="<%= settings.nickname %>">
+      <label>Description</label>
+      <textarea name="description"><%= settings.description %></textarea>
+      <label>Page Title</label>
+      <input name="title" value="<%= settings.title %>">
+      <label>Accent Color</label>
+      <input name="accentColor" type="color" value="<%= settings.accentColor %>" style="height:40px;padding:4px">
+      <label>Glass Blur (px)</label>
+      <input name="glassBlur" type="number" value="<%= settings.glassBlur %>" min="0" max="50">
+      <button class="btn" type="submit">Save</button>
+    </form>
+  </div>
+
+  <!-- Avatar -->
+  <div class="card">
+    <h2>Avatar</h2>
+    <form action="/admin/avatar" method="post" enctype="multipart/form-data">
+      <% if (settings.avatar) { %><img src="<%= settings.avatar %>" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:10px;display:block"><% } %>
+      <input type="file" name="avatar" accept="image/*">
+      <button class="btn" type="submit">Upload</button>
+    </form>
+  </div>
+
+  <!-- Favicon -->
+  <div class="card">
+    <h2>Favicon</h2>
+    <form action="/admin/favicon" method="post" enctype="multipart/form-data">
+      <input type="file" name="favicon" accept="image/*">
+      <button class="btn" type="submit">Upload</button>
+    </form>
+  </div>
+
+  <!-- Links -->
+  <div class="card">
+    <h2>Links</h2>
+    <form action="/admin/settings" method="post" id="linksForm">
+      <div class="links-list" id="linksList">
+        <% (settings.links || []).forEach(function(link){ %>
+          <div class="link-item">
+            <input name="linkLabel" placeholder="Label" value="<%= link.label %>">
+            <input name="linkUrl" placeholder="URL" value="<%= link.url %>">
+            <button type="button" onclick="this.parentElement.remove()">x</button>
+          </div>
+        <% }) %>
+      </div>
+      <div class="add-link" onclick="addLink()">+ Add Link</div>
+      <input type="hidden" name="links" id="linksHidden">
+      <button class="btn" type="submit">Save Links</button>
+    </form>
+  </div>
+
+  <!-- Social -->
+  <div class="card">
+    <h2>Social Links</h2>
+    <form action="/admin/settings" method="post">
+      <div class="row">
+        <div><label>Discord</label><input name="discord" value="<%= settings.discord %>"></div>
+        <div><label>Telegram</label><input name="telegram" value="<%= settings.telegram %>"></div>
+        <div><label>GitHub</label><input name="github" value="<%= settings.github %>"></div>
+        <div><label>YouTube</label><input name="youtube" value="<%= settings.youtube %>"></div>
+      </div>
+      <button class="btn" type="submit">Save</button>
+    </form>
+  </div>
+
+  <!-- Background -->
+  <div class="card">
+    <h2>Background</h2>
+    <form action="/admin/settings" method="post">
+      <label>Type</label>
+      <select name="bgType">
+        <option value="color" <%= settings.bgType==='color'?'selected':'' %>>Color</option>
+        <option value="image" <%= settings.bgType==='image'?'selected':'' %>>Image</option>
+        <option value="video" <%= settings.bgType==='video'?'selected':'' %>>Video</option>
+      </select>
+      <div id="bgColorField"><label>Color</label><input name="bgValue" type="color" value="<%= settings.bgValue %>" style="height:40px;padding:4px"></div>
+      <div id="bgImageField" style="display:none"><label>Image URL</label><input name="bgValue" placeholder="https://..." value="<%= settings.bgType==='image'?settings.bgValue:'' %>"></div>
+      <div id="bgVideoField" style="display:none"><label>Video URL / YouTube embed</label><input name="bgValue" placeholder="https://..." value="<%= settings.bgType==='video'?settings.bgValue:'' %>"></div>
+      <button class="btn" type="submit">Save</button>
+    </form>
+  </div>
+
+  <!-- Music -->
+  <div class="card">
+    <h2>Music</h2>
+    <form action="/admin/music" method="post" enctype="multipart/form-data">
+      <label>Upload MP3</label>
+      <input type="file" name="music" accept=".mp3,.ogg,.wav,.m4a">
+      <label>Display Name</label>
+      <input name="musicName" value="<%= settings.musicName %>" placeholder="My Song">
+      <% if (settings.music) { %><p style="color:#666;font-size:12px;margin-top:8px">Current: <%= settings.music %></p><% } %>
+      <button class="btn" type="submit">Upload</button>
+    </form>
+  </div>
+
+  <!-- Effects -->
+  <div class="card">
+    <h2>Effects</h2>
+    <form action="/admin/settings" method="post">
+      <div class="checkbox-row">
+        <label><input type="checkbox" name="glow" <%= settings.effects.glow?'checked':'' %> onchange="this.form.effects.value=JSON.stringify({glow:this.checked,particles:document.querySelector('[name=particles]').checked,scanlines:document.querySelector('[name=scanlines]').checked})"> Neon Glow</label>
+        <label><input type="checkbox" name="particles" <%= settings.effects.particles?'checked':'' %> onchange="this.form.effects.value=JSON.stringify({glow:document.querySelector('[name=glow]').checked,particles:this.checked,scanlines:document.querySelector('[name=scanlines]').checked})"> Particles</label>
+        <label><input type="checkbox" name="scanlines" <%= settings.effects.scanlines?'checked':'' %> onchange="this.form.effects.value=JSON.stringify({glow:document.querySelector('[name=glow]').checked,particles:document.querySelector('[name=particles]').checked,scanlines:this.checked})"> Scanlines</label>
+      </div>
+      <label style="margin-top:12px">Particle Count</label>
+      <input name="particleCount" type="number" value="<%= settings.particleCount %>" min="0" max="200">
+      <input type="hidden" name="effects" value='<%= JSON.stringify(settings.effects) %>'>
+      <button class="btn" type="submit">Save</button>
+    </form>
+  </div>
+
+  <!-- Stats -->
+  <div class="card">
+    <h2>Statistics</h2>
+    <p style="color:#aaa;font-size:14px">Views: <strong style="color:#fff"><%= settings.stats.views %></strong> &middot; Clicks: <strong style="color:#fff"><%= settings.stats.clicks %></strong></p>
+  </div>
+
+
+
+  <!-- Ngrok -->
+  <div class="card">
+    <h2>Ngrok</h2>
+    <form action="/admin/ngrok" method="post">
+      <label>Authtoken</label>
+      <input name="ngrokToken" value="<%= config.ngrokToken %>" placeholder="2n7a...">
+      <button class="btn" type="submit">Save Token</button>
+    </form>
+  </div>
+
+  <!-- Password -->
+  <div class="card">
+    <h2>Change Password</h2>
+    <form action="/admin/password" method="post">
+      <label>Current Password</label>
+      <input name="oldPassword" type="password">
+      <label>New Password</label>
+      <input name="newPassword" type="password">
+      <button class="btn" type="submit">Change</button>
+    </form>
+  </div>
+
+  <div style="text-align:center;padding:20px 0">
+    <a href="/logout" class="btn btn-outline">Logout</a>
+    <a href="/" class="btn" style="margin-left:8px">View Site</a>
+  </div>
+</div>
+
+<script>
+function addLink() {
+  const div = document.createElement('div');
+  div.className = 'link-item';
+  div.innerHTML = '<input name="linkLabel" placeholder="Label"><input name="linkUrl" placeholder="URL"><button type="button" onclick="this.parentElement.remove()">x</button>';
+  document.getElementById('linksList').appendChild(div);
+}
+document.getElementById('linksForm')?.addEventListener('submit', function(e) {
+  const items = this.querySelectorAll('.link-item');
+  const links = [];
+  items.forEach(item => {
+    const label = item.querySelector('[name=linkLabel]').value;
+    const url = item.querySelector('[name=linkUrl]').value;
+    if (label || url) links.push({ label, url });
+  });
+  document.getElementById('linksHidden').value = JSON.stringify(links);
+});
+// Background field toggle
+document.querySelector('[name=bgType]')?.addEventListener('change', function() {
+  ['bgColorField','bgImageField','bgVideoField'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('bg' + this.value.charAt(0).toUpperCase() + this.value.slice(1) + 'Field').style.display = 'block';
+});
+</script>
+</body>
+</html>

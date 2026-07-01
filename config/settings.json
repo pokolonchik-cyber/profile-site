@@ -1,0 +1,29 @@
+{
+  "avatar": "/uploads/1782870391766-.jpg",
+  "nickname": "extzzz",
+  "description": "Is destiny governed by the emergence of some transcendent entity or law? At the very least, one thing is certain: man controls nothing—not even his own will.",
+  "title": "My Profile",
+  "favicon": "",
+  "links": [],
+  "discord": "",
+  "telegram": "",
+  "github": "",
+  "youtube": "",
+  "bgType": "color",
+  "bgValue": "#0a0a0f",
+  "bgVideo": "",
+  "music": "/uploads/1782873633187-chanelfather_-_1tap_nightcorebot_SkySound.cc.mp3",
+  "musicName": "1tap",
+  "accentColor": "#8b5cf6",
+  "glassBlur": 16,
+  "particleCount": 60,
+  "effects": {
+    "glow": true,
+    "particles": true,
+    "scanlines": false
+  },
+  "stats": {
+    "views": 15,
+    "clicks": 0
+  }
+}

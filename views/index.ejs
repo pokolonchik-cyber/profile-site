@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= settings.title %></title>
+<meta name="description" content="<%= settings.description %>">
+<meta name="theme-color" content="<%= settings.accentColor %>">
+<meta property="og:title" content="<%= settings.title %>">
+<meta property="og:description" content="<%= settings.description %>">
+<% if (settings.avatar) { %><meta property="og:image" content="<%= settings.avatar %>"><% } %>
+<link rel="icon" href="<%= settings.favicon || '/favicon.ico' %>">
+<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<body>
+  <% if (settings.bgType === 'video' && settings.bgValue) { %>
+    <div class="bg-video-wrap">
+      <% if (settings.bgValue.includes('youtube') || settings.bgValue.includes('youtu.be')) { %>
+        <iframe src="<%= settings.bgValue.replace('watch?v=','embed/').split('&')[0] %>?autoplay=1&mute=1&loop=1&playlist=<%= settings.bgValue.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)?.[1] || '' %>&controls=0&showinfo=0" frameborder="0" allow="autoplay;fullscreen" class="bg-video"></iframe>
+      <% } else { %>
+        <video autoplay muted loop playsinline class="bg-video"><source src="<%= settings.bgValue %>"></video>
+      <% } %>
+    </div>
+  <% } else if (settings.bgType === 'image' && settings.bgValue) { %>
+    <div class="bg-image" style="background-image:url('<%= settings.bgValue %>')"></div>
+  <% } else { %>
+    <div class="bg-color" style="background:<%= settings.bgValue %>"></div>
+  <% } %>
+
+  <% if (settings.effects.particles) { %>
+    <canvas id="particles"></canvas>
+  <% } %>
+
+  <% if (settings.effects.glow) { %>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+  <% } %>
+
+  <% if (settings.effects.scanlines) { %>
+    <div class="scanlines"></div>
+  <% } %>
+
+  <div class="cursor" id="cursor"></div>
+
+  <div class="profile-card" data-accent="<%= settings.accentColor %>" style="--accent:<%= settings.accentColor %>;--blur:<%= settings.glassBlur %>px">
+    <div class="status-badge">Online</div>
+
+    <% if (settings.avatar) { %>
+      <div class="avatar-wrap">
+        <img src="<%= settings.avatar %>" alt="Avatar" class="avatar">
+        <div class="avatar-ring" style="border-color:<%= settings.accentColor %>"></div>
+      </div>
+    <% } else { %>
+      <div class="avatar-wrap">
+        <div class="avatar-placeholder" style="background:<%= settings.accentColor %>"><%= settings.nickname.charAt(0).toUpperCase() %></div>
+        <div class="avatar-ring" style="border-color:<%= settings.accentColor %>"></div>
+      </div>
+    <% } %>
+
+    <h1 class="nickname"><%= settings.nickname %></h1>
+    <p class="description"><%= settings.description %></p>
+
+    <div class="social-links" id="socialLinks">
+      <% if (settings.discord) { %>
+        <a href="#" class="social-btn discord-btn" data-discord="<%= settings.discord %>" onclick="copyDiscord(event, '<%= settings.discord %>')" title="Copy Discord">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 0 0-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 0 0-4.8 0c-.14-.34-.35-.76-.54-1.09c-.01-.02-.04-.03-.07-.03c-1.5.26-2.93.71-4.27 1.33c-.01 0-.02.01-.03.02c-2.72 4.07-3.47 8.03-3.1 11.95c0 .02.01.04.03.05c1.8 1.32 3.53 2.12 5.24 2.65c.03.01.06 0 .07-.02c.4-.55.76-1.13 1.07-1.74c.02-.04 0-.08-.04-.09c-.57-.22-1.11-.48-1.64-.78c-.04-.02-.04-.08-.01-.11c.11-.08.22-.17.33-.25c.02-.02.05-.02.07-.01c3.44 1.57 7.15 1.57 10.55 0c.02-.01.05-.01.07.01c.11.08.22.17.33.25c.03.03.03.09-.01.11c-.52.31-1.07.56-1.64.78c-.04.01-.05.06-.04.09c.31.61.67 1.19 1.07 1.74c.02.04.06.04.07.02c1.71-.53 3.44-1.33 5.24-2.65c.02-.01.03-.03.03-.05c.44-4.53-.73-8.46-3.1-11.95c-.01-.01-.02-.02-.04-.02zM8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.9.96 1.89 2.12c0 1.17-.83 2.12-1.89 2.12z"/></svg>
+          <span><%= settings.discord %></span>
+        </a>
+      <% } %>
+      <% if (settings.telegram) { %>
+        <a href="<%= settings.telegram.startsWith('http')?settings.telegram:'https://t.me/'+settings.telegram %>" target="_blank" class="social-btn telegram-btn" title="Telegram">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.127.037.336.029.522-.045.713-1.153 6.076-1.597 8.172-.214 1.018-.665 1.323-1.123 1.365-.924.088-1.626-.61-2.522-1.196-.674-.44-1.405-.935-2.166-1.488-.375-.273-.155-.558.206-.913.186-.186.978-.913 1.486-1.36.106-.093.203-.176.236-.209.095-.094.15-.207.035-.336-.094-.099-.796-.512-2.423-1.614-.285-.193-.51-.42-.383-.634.112-.19.316-.273.568-.35.032-.01.106-.03.106-.03s.233-.082.546-.17c.664-.185 1.377-.26 1.786-.176.248.05.44.17.533.4.071.176.165.624.235 1.009.2 1.092.486 2.497.634 3.143.083.365.23.5.433.507.187.006.323-.07.488-.155.246-.128.638-.515.97-.827.222-.209.473-.43.542-.56.122-.232.05-.426-.16-.548-.236-.137-.658-.344-1.608-.878-1.3-.73-1.316-.884-.269-1.405.526-.262 2.502-1.098 2.667-1.197"/></svg>
+          <span>Telegram</span>
+        </a>
+      <% } %>
+      <% if (settings.github) { %>
+        <a href="<%= settings.github.startsWith('http')?settings.github:'https://github.com/'+settings.github %>" target="_blank" class="social-btn github-btn" title="GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          <span>GitHub</span>
+        </a>
+      <% } %>
+      <% if (settings.youtube) { %>
+        <a href="<%= settings.youtube.startsWith('http')?settings.youtube:'https://youtube.com/@'+settings.youtube %>" target="_blank" class="social-btn youtube-btn" title="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          <span>YouTube</span>
+        </a>
+      <% } %>
+    </div>
+
+    <% if (settings.links && settings.links.length) { %>
+      <div class="links-section">
+        <% settings.links.forEach(function(link){ %>
+          <a href="<%= link.url %>" target="_blank" class="profile-link" style="--clr:<%= settings.accentColor %>"><%= link.label %></a>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (settings.music) { %>
+      <div class="music-section">
+        <button class="music-btn" id="musicBtn" title="Toggle music">
+          <svg viewBox="0 0 24 24" fill="currentColor" id="musicIcon"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          <span id="musicLabel"><%= settings.musicName || 'Music' %></span>
+        </button>
+        <div class="volume-wrap" id="volumeWrap">
+          <svg class="vol-icon" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.47 4.47 0 0 0 2.5-3.5zm2.5 0A7.5 7.5 0 0 0 14 5.5v2a5.5 5.5 0 0 1 0 9v2a7.5 7.5 0 0 0 5-3.5z"/></svg>
+          <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="30">
+        </div>
+      </div>
+      <audio id="bgMusic" src="<%= settings.music %>" loop></audio>
+    <% } %>
+  </div>
+
+<script src="/js/particles.js"></script>
+<script src="/js/music.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

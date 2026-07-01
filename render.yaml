@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: profile-site
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    envVars:
+      - key: NGROK_AUTHTOKEN
+        value: 3BllgQl2kxUXe1BfeDj7mh99kRC_AztC9yMbDJdFQZVf7dqA
