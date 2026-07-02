@@ -7,7 +7,8 @@ const multer = require('multer');
 
 // PostgreSQL setup (Render free, persists forever)
 const { Pool } = require('pg');
-const pgPool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }) : null;
+const DB_URL = process.env.DATABASE_URL || process.env.RENDER_DATABASE_URL || '';
+const pgPool = DB_URL ? new Pool({ connectionString: DB_URL, ssl: { rejectUnauthorized: false } }) : null;
 
 const app = express();
 const PORT = 3000;
@@ -88,8 +89,13 @@ initConfig().catch(function(e) { console.error('Init error:', e.message); });
 
 // Debug: show DB status after init
 setTimeout(function() {
-  console.log('DB_URL set:', !!process.env.DATABASE_URL);
+  console.log('DATABASE_URL set:', !!process.env.DATABASE_URL);
+  console.log('DB_URL:', DB_URL ? DB_URL.substring(0, 30) + '...' : 'none');
   console.log('pgPool:', !!pgPool);
+  // List all RENDER_ env vars
+  Object.keys(process.env).filter(function(k) { return k.startsWith('RENDER_'); }).forEach(function(k) {
+    console.log('  ' + k + ':', process.env[k] ? process.env[k].substring(0, 40) + '...' : '(empty)');
+  });
 }, 1000);
 
 // PostgreSQL helper
@@ -134,6 +140,24 @@ function writeJSON(file, data) {
   if (pgPool) {
     if (file === SETTINGS_FILE) saveSettings(data).catch(function(){});
     else if (file === CONFIG_FILE) saveConfig(data).catch(function(){});
+  }
+  // Auto-commit to git so settings survive any deploy
+  if (file === SETTINGS_FILE || file === CONFIG_FILE) {
+    try {
+      const execSync = require('child_process').execSync;
+      execSync('git config user.email "server@render.com"', { timeout: 2000 });
+      execSync('git config user.name "Render Server"', { timeout: 2000 });
+      execSync('git add config/settings.json config/config.json 2>nul', { timeout: 5000 });
+      execSync('git commit -m "Auto-save settings [skip ci]" 2>nul', { timeout: 5000 });
+      // Try SSH push (Render provides SSH deploy key)
+      var remoteUrl = execSync('git remote get-url origin', { timeout: 2000 }).toString().trim();
+      if (remoteUrl.includes('github.com')) {
+        var sshUrl = remoteUrl.replace('https://github.com/', 'git@github.com:');
+        execSync('git remote set-url origin ' + sshUrl, { timeout: 2000 });
+        execSync('git push origin master 2>nul', { timeout: 15000 });
+        execSync('git remote set-url origin ' + remoteUrl, { timeout: 2000 });
+      }
+    } catch(e) { /* git not available */ }
   }
 }
 // Persistent save via PostgreSQL
