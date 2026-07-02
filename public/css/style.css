@@ -47,12 +47,19 @@ body{
 
 /* Custom cursor */
 .cursor{
-  position:fixed;width:20px;height:20px;border-radius:50%;
-  background:var(--accent);pointer-events:none;z-index:9999;
-  mix-blend-mode:difference;transition:width .2s,height .2s;
+  position:fixed;width:28px;height:28px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.6);pointer-events:none;z-index:9999;
   transform:translate(-50%,-50%);display:none;
+  transition:width .2s,height .2s,border-color .2s;
+  box-shadow:0 0 12px rgba(255,255,255,.08);
 }
-.cursor.hover{width:40px;height:40px;opacity:.5}
+.cursor::after{
+  content:'';position:absolute;top:50%;left:50%;
+  width:3px;height:3px;border-radius:50%;
+  background:rgba(255,255,255,.8);
+  transform:translate(-50%,-50%);
+}
+.cursor.hover{width:44px;height:44px;border-color:var(--accent)}
 
 /* Profile card */
 .profile-card{
@@ -133,36 +140,39 @@ body{
 /* Music section */
 .music-section{
   display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:8px 16px;margin-top:4px;
 }
 .music-btn{
   display:inline-flex;align-items:center;gap:8px;
-  padding:10px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.1);
-  background:rgba(255,255,255,.06);color:#fff;font-size:13px;
-  cursor:pointer;transition:all .25s ease;
+  padding:6px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.06);color:#fff;font-size:12px;
+  cursor:pointer;transition:all .25s ease;flex-shrink:0;
 }
-.music-btn svg{width:18px;height:18px;transition:transform .3s}
+.music-btn svg{width:16px;height:16px;transition:transform .3s}
 .music-btn.playing svg{animation:spin 3s linear infinite}
-.music-btn:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}
+.music-btn:hover{background:rgba(255,255,255,.1);border-color:var(--accent)}
+#musicLabel{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .volume-wrap{
-  display:flex;align-items:center;gap:6px;
-  padding:6px 10px;border-radius:10px;
+  display:flex;align-items:center;gap:5px;
+  padding:4px 8px;border-radius:8px;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);
 }
-.vol-icon{opacity:.5;flex-shrink:0}
+.vol-icon{opacity:.4;flex-shrink:0;width:12px;height:12px}
 .volume-slider{
   -webkit-appearance:none;appearance:none;
-  width:70px;height:4px;border-radius:2px;
+  width:56px;height:3px;border-radius:2px;
   background:rgba(255,255,255,.12);outline:none;cursor:pointer;
 }
 .volume-slider::-webkit-slider-thumb{
   -webkit-appearance:none;appearance:none;
-  width:14px;height:14px;border-radius:50%;
+  width:12px;height:12px;border-radius:50%;
   background:var(--accent,#8b5cf6);border:2px solid rgba(255,255,255,.2);
   cursor:pointer;transition:transform .15s;
 }
 .volume-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
 .volume-slider::-moz-range-thumb{
-  width:14px;height:14px;border-radius:50%;
+  width:12px;height:12px;border-radius:50%;
   background:var(--accent,#8b5cf6);border:2px solid rgba(255,255,255,.2);
   cursor:pointer;
 }
