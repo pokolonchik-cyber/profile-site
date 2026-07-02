@@ -5,6 +5,10 @@ const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
 
+// PostgreSQL setup (Render free, persists forever)
+const { Pool } = require('pg');
+const pgPool = process.env.DATABASE_URL ? new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } }) : null;
+
 const app = express();
 const PORT = 3000;
 const CONFIG_DIR = process.env.CONFIG_DIR || path.join(__dirname, 'config');
@@ -42,9 +46,24 @@ const defaultSettings = {
 
 const VISITORS_FILE = path.join(CONFIG_DIR, 'visitors.json');
 
-// Init files
-function initConfig() {
-  // Restore from /tmp backup first (persists across deploys on Render)
+// Init files and DB
+async function initConfig() {
+  // Load from PostgreSQL first
+  if (pgPool) {
+    await pgInit();
+    var dbSettings = await loadSettings();
+    if (dbSettings) {
+      if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
+      fs.writeFileSync(SETTINGS_FILE, JSON.stringify(dbSettings, null, 2));
+      console.log('Settings restored from PostgreSQL');
+    }
+    var dbConfig = await loadConfig();
+    if (dbConfig) {
+      fs.writeFileSync(CONFIG_FILE, JSON.stringify(dbConfig, null, 2));
+      console.log('Config restored from PostgreSQL');
+    }
+  }
+  // Restore from /tmp backup
   try {
     if (fs.existsSync(path.join(BACKUP_DIR, 'settings.json'))) {
       if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
@@ -65,7 +84,25 @@ function initConfig() {
     fs.writeFileSync(VISITORS_FILE, JSON.stringify([], null, 2));
   }
 }
-initConfig();
+initConfig().catch(function(e) { console.error('Init error:', e.message); });
+
+// PostgreSQL helper
+async function pgQuery(text, params) {
+  if (!pgPool) return null;
+  try { return await pgPool.query(text, params); } catch(e) { console.error('DB error:', e.message); return null; }
+}
+async function pgInit() {
+  if (!pgPool) return;
+  await pgQuery(`CREATE TABLE IF NOT EXISTS config (key TEXT PRIMARY KEY, value JSONB)`);
+}
+async function pgGet(key) {
+  var r = await pgQuery('SELECT value FROM config WHERE key=$1', [key]);
+  if (r && r.rows.length) return r.rows[0].value;
+  return null;
+}
+async function pgSet(key, val) {
+  await pgQuery('INSERT INTO config (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value=$2', [key, JSON.stringify(val)]);
+}
 
 function readJSON(file, fallback) {
   try { return JSON.parse(fs.readFileSync(file, 'utf-8')); } catch(e) { return fallback || {}; }
@@ -76,6 +113,24 @@ function writeJSON(file, data) {
     if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
     fs.writeFileSync(path.join(BACKUP_DIR, path.basename(file)), JSON.stringify(data, null, 2));
   } catch(e) { console.error('Backup failed:', e.message); }
+  // Fire-and-forget to PostgreSQL
+  if (pgPool) {
+    if (file === SETTINGS_FILE) saveSettings(data).catch(function(){});
+    else if (file === CONFIG_FILE) saveConfig(data).catch(function(){});
+  }
+}
+// Persistent save via PostgreSQL
+async function saveSettings(data) { if (pgPool) await pgSet('settings', data); }
+async function loadSettings() {
+  if (!pgPool) return null;
+  var v = await pgGet('settings');
+  return v;
+}
+async function saveConfig(data) { if (pgPool) await pgSet('config', data); }
+async function loadConfig() {
+  if (!pgPool) return null;
+  var v = await pgGet('config');
+  return v;
 }
 
 function parseUA(ua) {
