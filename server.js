@@ -175,6 +175,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const config = readJSON(CONFIG_FILE);
+  if (!req.body || !req.body.password) return res.redirect('/login?error=1');
   const hash = crypto.createHash('sha256').update(req.body.password).digest('hex');
   if (req.body.username === config.admin.username && hash === config.admin.password) {
     req.session.admin = true;
