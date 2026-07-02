@@ -64,11 +64,13 @@ body{
 /* Trail dots */
 .trail-dot{
   position:fixed;border-radius:50%;pointer-events:none;z-index:9998;
-  background:rgba(255,255,255,.6);
+  background:rgba(255,255,255,.65);
   transform:translate(-50%,-50%);
-  opacity:1;
-  transition:opacity .5s ease-out,transform .5s ease-out;
-  will-change:opacity,transform;
+  animation:trailFade .5s ease-out forwards;
+}
+@keyframes trailFade{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,calc(-50% - 14px)) scale(.3)}
 }
 
 /* Profile card */

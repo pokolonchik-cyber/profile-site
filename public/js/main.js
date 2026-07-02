@@ -25,23 +25,21 @@
   var trailTick = 0;
   function spawnTrail(x, y) {
     trailTick++;
-    if (trailTick % 3 !== 0) return; // spawn every 3rd event to avoid too many
-    for (var i = 0; i < 3; i++) {
+    if (trailTick % 2 !== 0) return;
+    for (var i = 0; i < 4; i++) {
       var dot = document.createElement('div');
       dot.className = 'trail-dot';
-      var s = 5 + Math.random() * 5;
+      var s = 6 + Math.random() * 6;
       dot.style.width = s + 'px';
       dot.style.height = s + 'px';
-      dot.style.left = (x + (Math.random() - 0.5) * 12) + 'px';
-      dot.style.top = (y + (Math.random() - 0.5) * 12) + 'px';
+      dot.style.left = (x + (Math.random() - 0.5) * 16) + 'px';
+      dot.style.top = (y + (Math.random() - 0.5) * 16) + 'px';
+      dot.style.animationDelay = (Math.random() * 0.1) + 's';
+      dot.style.background = 'rgba(255,255,255,' + (0.4 + Math.random() * 0.4) + ')';
       document.body.appendChild(dot);
-      requestAnimationFrame(function() {
-        dot.style.opacity = '0';
-        dot.style.transform = 'translate(' + (Math.random() - 0.5) * 10 + 'px, -' + (4 + Math.random() * 6) + 'px)';
-      });
       setTimeout(function() {
         if (dot.parentNode) dot.parentNode.removeChild(dot);
-      }, 500);
+      }, 600);
     }
   }
 })();
