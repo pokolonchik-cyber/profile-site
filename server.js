@@ -64,6 +64,17 @@ async function initConfig() {
       console.log('Config restored from PostgreSQL');
     }
   }
+  // Restore from RENDER_SETTINGS_B64 env var (manual fallback)
+  try {
+    if (process.env.RENDER_SETTINGS_B64) {
+      var decoded = JSON.parse(Buffer.from(process.env.RENDER_SETTINGS_B64, 'base64').toString());
+      if (decoded && decoded.title) {
+        if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
+        fs.writeFileSync(SETTINGS_FILE, JSON.stringify(decoded, null, 2));
+        console.log('Settings restored from RENDER_SETTINGS_B64');
+      }
+    }
+  } catch(e) { console.error('B64 restore failed:', e.message); }
   // Restore from /tmp backup
   try {
     if (fs.existsSync(path.join(BACKUP_DIR, 'settings.json'))) {
@@ -86,6 +97,23 @@ async function initConfig() {
   }
 }
 initConfig().catch(function(e) { console.error('Init error:', e.message); });
+
+// Sync settings to Render API on startup (ensures env var matches current file)
+try {
+  if (process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID) {
+    if (fs.existsSync(SETTINGS_FILE)) {
+      var settingsJson = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf-8'));
+      var b64 = Buffer.from(JSON.stringify(settingsJson)).toString('base64');
+      require('https').request({
+        hostname: 'api.render.com',
+        path: '/v1/services/' + process.env.RENDER_SERVICE_ID + '/env-vars/RENDER_SETTINGS_B64',
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + process.env.RENDER_API_KEY, 'Content-Type': 'application/json' }
+      }).end(JSON.stringify({ value: b64 }));
+      console.log('Settings synced to Render API');
+    }
+  }
+} catch(e) { console.error('Render API sync failed:', e.message); }
 
 // Debug: show DB status after init
 setTimeout(function() {
@@ -145,19 +173,21 @@ function writeJSON(file, data) {
   if (file === SETTINGS_FILE || file === CONFIG_FILE) {
     try {
       const execSync = require('child_process').execSync;
-      execSync('git config user.email "server@render.com"', { timeout: 2000 });
-      execSync('git config user.name "Render Server"', { timeout: 2000 });
-      execSync('git add config/settings.json config/config.json 2>nul', { timeout: 5000 });
-      execSync('git commit -m "Auto-save settings [skip ci]" 2>nul', { timeout: 5000 });
-      // Try SSH push (Render provides SSH deploy key)
-      var remoteUrl = execSync('git remote get-url origin', { timeout: 2000 }).toString().trim();
-      if (remoteUrl.includes('github.com')) {
-        var sshUrl = remoteUrl.replace('https://github.com/', 'git@github.com:');
-        execSync('git remote set-url origin ' + sshUrl, { timeout: 2000 });
-        execSync('git push origin master 2>nul', { timeout: 15000 });
-        execSync('git remote set-url origin ' + remoteUrl, { timeout: 2000 });
-      }
+      execSync('git config user.email "server@render.com"', { timeout: 2000, stdio: 'ignore' });
+      execSync('git config user.name "Render Server"', { timeout: 2000, stdio: 'ignore' });
+      execSync('git add config/settings.json config/config.json', { timeout: 5000, stdio: 'ignore' });
+      execSync('git commit -m "Auto-save settings [skip ci]"', { timeout: 8000, stdio: 'ignore' });
     } catch(e) { /* git not available */ }
+  }
+  // Persist via Render API (env var update) so settings survive redeploys
+  if ((file === SETTINGS_FILE && process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID)) {
+    var b64 = Buffer.from(JSON.stringify(data)).toString('base64');
+    try {
+      require('https').request({
+        hostname: 'api.render.com', path: '/v1/services/' + process.env.RENDER_SERVICE_ID + '/env-vars/RENDER_SETTINGS_B64',
+        method: 'PUT', headers: { 'Authorization': 'Bearer ' + process.env.RENDER_API_KEY, 'Content-Type': 'application/json' }
+      }).end(JSON.stringify({ value: b64 }));
+    } catch(e) { console.error('Render API update failed:', e.message); }
   }
 }
 // Persistent save via PostgreSQL
@@ -290,7 +320,7 @@ app.get('/admin', requireAuth, (req, res) => {
   const config = readJSON(CONFIG_FILE);
   const settings = readJSON(SETTINGS_FILE);
   const visitors = readJSON(VISITORS_FILE).reverse().map(v => ({ ...v, parsed: parseUA(v.ua) }));
-  res.render('admin', { settings, config, visitors, msg: req.query.msg || '' });
+  res.render('admin', { settings, config, visitors, msg: req.query.msg || '', b64: req.query.b64 || '' });
 });
 
 app.post('/admin/settings', requireAuth, (req, res) => {
@@ -306,7 +336,9 @@ app.post('/admin/settings', requireAuth, (req, res) => {
   settings.glassBlur = parseInt(settings.glassBlur) || 16;
   settings.particleCount = parseInt(settings.particleCount) || 60;
   writeJSON(SETTINGS_FILE, settings);
-  res.redirect('/admin?msg=Settings saved');
+  // Encode settings for env var fallback
+  var b64 = Buffer.from(JSON.stringify(settings)).toString('base64');
+  res.redirect('/admin?msg=Settings saved&b64=' + encodeURIComponent(b64));
 });
 
 app.post('/admin/avatar', requireAuth, upload.single('avatar'), (req, res) => {
