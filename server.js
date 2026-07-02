@@ -9,6 +9,7 @@ const app = express();
 const PORT = 3000;
 const CONFIG_DIR = process.env.CONFIG_DIR || path.join(__dirname, 'config');
 const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'public', 'uploads');
+const BACKUP_DIR = '/tmp/render-config';
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'settings.json');
 
@@ -43,6 +44,13 @@ const VISITORS_FILE = path.join(CONFIG_DIR, 'visitors.json');
 
 // Init files
 function initConfig() {
+  // Try restore from /tmp backup (persists across deploys on Render)
+  if (!fs.existsSync(SETTINGS_FILE) && fs.existsSync(path.join(BACKUP_DIR, 'settings.json'))) {
+    if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
+    fs.copyFileSync(path.join(BACKUP_DIR, 'settings.json'), SETTINGS_FILE);
+    if (fs.existsSync(path.join(BACKUP_DIR, 'config.json')))
+      fs.copyFileSync(path.join(BACKUP_DIR, 'config.json'), CONFIG_FILE);
+  }
   if (!fs.existsSync(CONFIG_FILE)) {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({ setupDone: false, admin: {}, ngrokToken: '' }, null, 2));
   }
@@ -56,7 +64,14 @@ function initConfig() {
 initConfig();
 
 function readJSON(file) { return JSON.parse(fs.readFileSync(file, 'utf-8')); }
-function writeJSON(file, data) { fs.writeFileSync(file, JSON.stringify(data, null, 2)); }
+function writeJSON(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+  // Backup to /tmp for Render persistence
+  if (file === SETTINGS_FILE || file === CONFIG_FILE) {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    fs.writeFileSync(path.join(BACKUP_DIR, path.basename(file)), JSON.stringify(data, null, 2));
+  }
+}
 
 function parseUA(ua) {
   let browser = 'Unknown', os = 'Unknown', device = 'Desktop';
