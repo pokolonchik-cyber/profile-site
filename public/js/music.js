@@ -31,11 +31,8 @@
 
   function doStop() {
     audio.pause();
-    audio.currentTime = 0;
     playing = false;
     updateUI();
-    if (progressBar) progressBar.value = 0;
-    if (timeCur) timeCur.textContent = '0:00';
   }
 
   // Show duration when metadata loaded
