@@ -86,14 +86,31 @@ async function initConfig() {
 }
 initConfig().catch(function(e) { console.error('Init error:', e.message); });
 
+// Debug: show DB status after init
+setTimeout(function() {
+  console.log('DB_URL set:', !!process.env.DATABASE_URL);
+  console.log('pgPool:', !!pgPool);
+}, 1000);
+
 // PostgreSQL helper
 async function pgQuery(text, params) {
   if (!pgPool) return null;
   try { return await pgPool.query(text, params); } catch(e) { console.error('DB error:', e.message); return null; }
 }
 async function pgInit() {
-  if (!pgPool) return;
-  await pgQuery(`CREATE TABLE IF NOT EXISTS config (key TEXT PRIMARY KEY, value JSONB)`);
+  if (!pgPool) {
+    console.log('PG: no pool (DATABASE_URL not set)');
+    return;
+  }
+  try {
+    await pgQuery(`CREATE TABLE IF NOT EXISTS config (key TEXT PRIMARY KEY, value JSONB)`);
+    console.log('PG: table ready');
+    // Check if we have data
+    var r = await pgQuery('SELECT key FROM config');
+    if (r && r.rows) console.log('PG: stored keys:', r.rows.map(function(r) { return r.key; }));
+  } catch(e) {
+    console.error('PG init error:', e.message);
+  }
 }
 async function pgGet(key) {
   var r = await pgQuery('SELECT value FROM config WHERE key=$1', [key]);
@@ -331,6 +348,17 @@ app.post('/admin/password', requireAuth, (req, res) => {
 app.get('/logout', (req, res) => {
   req.session.destroy();
   res.redirect('/');
+});
+
+// Debug: check DB + settings status (admin only)
+app.get('/admin/dbcheck', requireAuth, function(req, res) {
+  res.json({
+    dbUrl: !!process.env.DATABASE_URL,
+    pgPool: !!pgPool,
+    settingsFile: require('fs').existsSync(SETTINGS_FILE),
+    settings: readJSON(SETTINGS_FILE, null),
+    dbSettings: null
+  });
 });
 
 app.get('/click', (req, res) => {
