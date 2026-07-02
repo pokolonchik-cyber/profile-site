@@ -45,16 +45,16 @@ const VISITORS_FILE = path.join(CONFIG_DIR, 'visitors.json');
 // Init files
 function initConfig() {
   // Restore from /tmp backup first (persists across deploys on Render)
-  if (fs.existsSync(path.join(BACKUP_DIR, 'settings.json'))) {
-    try {
+  try {
+    if (fs.existsSync(path.join(BACKUP_DIR, 'settings.json'))) {
       if (!fs.existsSync(CONFIG_DIR)) fs.mkdirSync(CONFIG_DIR, { recursive: true });
       fs.copyFileSync(path.join(BACKUP_DIR, 'settings.json'), SETTINGS_FILE);
       if (fs.existsSync(path.join(BACKUP_DIR, 'config.json')))
         fs.copyFileSync(path.join(BACKUP_DIR, 'config.json'), CONFIG_FILE);
       if (fs.existsSync(path.join(BACKUP_DIR, 'visitors.json')))
         fs.copyFileSync(path.join(BACKUP_DIR, 'visitors.json'), VISITORS_FILE);
-    } catch(e) {}
-  }
+    }
+  } catch(e) { console.error('Backup restore failed:', e.message); }
   if (!fs.existsSync(CONFIG_FILE)) {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify({ setupDone: false, admin: {}, ngrokToken: '' }, null, 2));
   }
@@ -67,12 +67,15 @@ function initConfig() {
 }
 initConfig();
 
-function readJSON(file) { return JSON.parse(fs.readFileSync(file, 'utf-8')); }
+function readJSON(file, fallback) {
+  try { return JSON.parse(fs.readFileSync(file, 'utf-8')); } catch(e) { return fallback || {}; }
+}
 function writeJSON(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-  // Backup to /tmp for Render persistence
-  if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
-  fs.writeFileSync(path.join(BACKUP_DIR, path.basename(file)), JSON.stringify(data, null, 2));
+  try { fs.writeFileSync(file, JSON.stringify(data, null, 2)); } catch(e) { console.error('Write failed:', e.message); }
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    fs.writeFileSync(path.join(BACKUP_DIR, path.basename(file)), JSON.stringify(data, null, 2));
+  } catch(e) { console.error('Backup failed:', e.message); }
 }
 
 function parseUA(ua) {

@@ -22,23 +22,27 @@
   });
 
   // Trail particles
+  var trailTick = 0;
   function spawnTrail(x, y) {
-    var dot = document.createElement('div');
-    dot.className = 'trail-dot';
-    var s = 3 + Math.random() * 3;
-    dot.style.width = s + 'px';
-    dot.style.height = s + 'px';
-    dot.style.left = (x + (Math.random() - 0.5) * 6) + 'px';
-    dot.style.top = (y + (Math.random() - 0.5) * 6) + 'px';
-    document.body.appendChild(dot);
-    // Animate
-    requestAnimationFrame(function() {
-      dot.style.opacity = '0';
-      dot.style.transform = 'translate(0, -6px)';
-    });
-    setTimeout(function() {
-      if (dot.parentNode) dot.parentNode.removeChild(dot);
-    }, 500);
+    trailTick++;
+    if (trailTick % 3 !== 0) return; // spawn every 3rd event to avoid too many
+    for (var i = 0; i < 3; i++) {
+      var dot = document.createElement('div');
+      dot.className = 'trail-dot';
+      var s = 5 + Math.random() * 5;
+      dot.style.width = s + 'px';
+      dot.style.height = s + 'px';
+      dot.style.left = (x + (Math.random() - 0.5) * 12) + 'px';
+      dot.style.top = (y + (Math.random() - 0.5) * 12) + 'px';
+      document.body.appendChild(dot);
+      requestAnimationFrame(function() {
+        dot.style.opacity = '0';
+        dot.style.transform = 'translate(' + (Math.random() - 0.5) * 10 + 'px, -' + (4 + Math.random() * 6) + 'px)';
+      });
+      setTimeout(function() {
+        if (dot.parentNode) dot.parentNode.removeChild(dot);
+      }, 500);
+    }
   }
 })();
 

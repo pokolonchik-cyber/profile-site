@@ -59,7 +59,7 @@ body{
   background:rgba(255,255,255,.9);
   transform:translate(-50%,-50%);
 }
-.cursor.hover{width:24px;height:24px;background:var(--accent)}
+.cursor.hover{width:24px;height:24px;background:rgba(255,255,255,.5);box-shadow:0 0 14px rgba(255,255,255,.2)}
 
 /* Trail dots */
 .trail-dot{
