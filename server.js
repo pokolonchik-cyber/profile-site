@@ -7,8 +7,8 @@ const multer = require('multer');
 
 const app = express();
 const PORT = 3000;
-const CONFIG_DIR = path.join(__dirname, 'config');
-const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
+const CONFIG_DIR = process.env.CONFIG_DIR || path.join(__dirname, 'config');
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'public', 'uploads');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 const SETTINGS_FILE = path.join(CONFIG_DIR, 'settings.json');
 
@@ -92,6 +92,7 @@ const upload = multer({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(UPLOAD_DIR));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
