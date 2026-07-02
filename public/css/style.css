@@ -101,6 +101,40 @@ body{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* Decorative AK + wings */
+.deco-wrap{
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;margin-top:4px;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.deco-wrap:hover{transform:scale(1.05)}
+.deco-wing{width:110px;flex-shrink:0;position:relative}
+.deco-wing svg{display:block;width:100%;height:auto;color:var(--accent);
+  filter:drop-shadow(0 0 8px rgba(139,92,246,.5)) drop-shadow(0 0 25px rgba(139,92,246,.25));
+  animation:wingFloat 3.6s ease-in-out infinite;
+}
+.deco-wing-left svg{transform:scaleX(-1)}
+.deco-wing-right svg{animation-delay:.1s}
+@keyframes wingFloat{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-5px) scale(1.03)}
+}
+.deco-icon{
+  width:80px;flex-shrink:0;z-index:1;position:relative;
+  margin:0 -6px;
+  animation:iconPulse 3.6s ease-in-out infinite;
+}
+@keyframes iconPulse{
+  0%,100%{transform:translateY(0) scale(1);opacity:1}
+  50%{transform:translateY(-2px) scale(1.02);opacity:.9}
+}
+.deco-icon img,.deco-icon svg{display:block;width:100%;height:auto;color:rgba(255,255,255,.85)}
+@media(max-width:480px){
+  .deco-wing{width:80px}
+  .deco-icon{width:64px;margin:0 -4px}
+  .deco-wrap{margin-bottom:12px}
+}
+
 /* Nickname */
 .nickname{font-size:26px;font-weight:700;margin-bottom:8px;letter-spacing:-.5px}
 .description{font-size:14px;color:#999;line-height:1.5;margin-bottom:24px}
