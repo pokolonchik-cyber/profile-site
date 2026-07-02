@@ -1,34 +1,62 @@
-// Custom cursor
-const cursor = document.getElementById('cursor');
-if (cursor) {
-  document.addEventListener('mousemove', e => {
+// Custom cursor with trail
+(function() {
+  var cursor = document.getElementById('cursor');
+  if (!cursor) return;
+
+  var trailPool = [];
+
+  document.addEventListener('mousemove', function(e) {
     cursor.style.display = 'block';
     cursor.style.left = e.clientX + 'px';
     cursor.style.top = e.clientY + 'px';
+    spawnTrail(e.clientX, e.clientY);
   });
-  document.addEventListener('mouseleave', () => cursor.style.display = 'none');
-  document.querySelectorAll('a, button, .social-btn, .profile-link, .music-btn').forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+  document.addEventListener('mouseleave', function() {
+    cursor.style.display = 'none';
   });
-}
+
+  // Hover effects
+  document.querySelectorAll('a, button, .social-btn, .profile-link, .music-btn, .volume-slider, .progress-bar').forEach(function(el) {
+    el.addEventListener('mouseenter', function() { cursor.classList.add('hover'); });
+    el.addEventListener('mouseleave', function() { cursor.classList.remove('hover'); });
+  });
+
+  // Trail particles
+  function spawnTrail(x, y) {
+    var dot = document.createElement('div');
+    dot.className = 'trail-dot';
+    var s = 3 + Math.random() * 3;
+    dot.style.width = s + 'px';
+    dot.style.height = s + 'px';
+    dot.style.left = (x + (Math.random() - 0.5) * 6) + 'px';
+    dot.style.top = (y + (Math.random() - 0.5) * 6) + 'px';
+    document.body.appendChild(dot);
+    // Animate
+    requestAnimationFrame(function() {
+      dot.style.opacity = '0';
+      dot.style.transform = 'translate(0, -6px)';
+    });
+    setTimeout(function() {
+      if (dot.parentNode) dot.parentNode.removeChild(dot);
+    }, 500);
+  }
+})();
 
 // Copy discord
 function copyDiscord(e, discord) {
   e.preventDefault();
-  navigator.clipboard.writeText(discord).then(() => {
+  navigator.clipboard.writeText(discord).then(function() {
     showToast('Discord copied: ' + discord);
-    // Track click
-    fetch('/click').then(r => r.json()).then(d => {
-      const badge = document.querySelector('.status-badge');
+    fetch('/click').then(function(r) { return r.json(); }).then(function() {
+      var badge = document.querySelector('.status-badge');
       if (badge) badge.textContent = 'Online';
-    }).catch(() => {});
-  }).catch(() => {});
+    }).catch(function() {});
+  }).catch(function() {});
 }
 
 // Toast
 function showToast(msg) {
-  let toast = document.querySelector('.toast');
+  var toast = document.querySelector('.toast');
   if (!toast) {
     toast = document.createElement('div');
     toast.className = 'toast';
@@ -37,11 +65,11 @@ function showToast(msg) {
   toast.textContent = msg;
   toast.classList.add('show');
   clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
+  toast._timeout = setTimeout(function() { toast.classList.remove('show'); }, 2500);
 }
 
-// Smooth reveal animation on scroll
-document.addEventListener('DOMContentLoaded', () => {
-  const card = document.querySelector('.profile-card');
+// Smooth reveal animation
+document.addEventListener('DOMContentLoaded', function() {
+  var card = document.querySelector('.profile-card');
   if (card) card.style.animation = 'fadeIn 1s ease-out forwards';
 });

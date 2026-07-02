@@ -1,4 +1,4 @@
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;cursor:none!important}
 
 :root{--accent:#8b5cf6;--blur:16px}
 
@@ -60,6 +60,16 @@ body{
   transform:translate(-50%,-50%);
 }
 .cursor.hover{width:24px;height:24px;background:var(--accent)}
+
+/* Trail dots */
+.trail-dot{
+  position:fixed;border-radius:50%;pointer-events:none;z-index:9998;
+  background:rgba(255,255,255,.6);
+  transform:translate(-50%,-50%);
+  opacity:1;
+  transition:opacity .5s ease-out,transform .5s ease-out;
+  will-change:opacity,transform;
+}
 
 /* Profile card */
 .profile-card{
