@@ -139,9 +139,12 @@ body{
 
 /* Music section */
 .music-section{
-  display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;
+  display:flex;flex-direction:column;gap:6px;
   background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
   border-radius:14px;padding:8px 12px;margin-top:4px;
+}
+.music-row{
+  display:flex;align-items:center;justify-content:center;gap:6px;
 }
 .music-btn{
   display:inline-flex;align-items:center;gap:8px;
@@ -154,7 +157,7 @@ body{
 .music-btn:hover{background:rgba(255,255,255,.1);border-color:var(--accent)}
 #musicLabel{max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .progress-wrap{
-  display:flex;align-items:center;gap:5px;flex:1;min-width:120px;
+  display:flex;align-items:center;gap:5px;width:100%;
 }
 .time-cur,.time-total{font-size:10px;color:#888;white-space:nowrap;min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
 .progress-bar{
